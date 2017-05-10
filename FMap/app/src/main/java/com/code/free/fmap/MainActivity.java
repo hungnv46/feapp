@@ -1,22 +1,35 @@
 package com.code.free.fmap;
 
+import android.app.Dialog;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.PopupWindow;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 
+import com.google.android.gms.identity.intents.Address;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -26,6 +39,10 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener, OnMapReadyCallback {
@@ -70,6 +87,42 @@ public class MainActivity extends AppCompatActivity implements
                 .title("Marker in myLocaltion"));
         fMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
         fMap.animateCamera( CameraUpdateFactory.zoomTo( 17.0f ) );
+
+        Context context = getApplicationContext();
+
+        Geocoder geocoder;
+        List<android.location.Address> addresses;
+        geocoder = new Geocoder(context, Locale.getDefault());
+        double latitude = lastLocation.getLatitude();
+        double longitude = lastLocation.getLongitude();
+
+        try {
+            addresses = geocoder.getFromLocation(latitude, longitude, 1);
+
+            String address = addresses.get(0).getAddressLine(0);
+            String city = addresses.get(0).getLocality();
+            String district = addresses.get(0).getSubAdminArea();
+
+            int duration = Toast.LENGTH_LONG;
+
+            Toast toast = Toast.makeText(context, "Thanh Pho: " + city + "_" + "Dia chi: " + address + "_" + "Quan: " + district, duration);
+            toast.show();
+
+            final Dialog dialog = new Dialog(this);
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            dialog.setContentView(R.layout.custom_dialog);
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.setCancelable(true);
+
+            TextView textView = (TextView) dialog.findViewById(R.id.txtTitle);
+            textView.setText("Thành Phố: " + city + "____" + "Quận: " + district + "____" + "Địa chỉ nhà: " + address);
+
+            dialog.show();
+
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
     }
